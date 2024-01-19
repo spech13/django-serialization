@@ -13,9 +13,9 @@ def black(session):
 @nox.session
 def flake8(session):
     session.install("flake8")
-    session.run("python", "-m", "flake8", "serialization_app")
+    session.run("python", "-m", "flake8", "--max-line-length", "88", "serialization_app")
 
 @nox.session
 def pylint(session):
     session.install("pylint")
-    session.run("python", "-m", "pylint", "serialization_app")
+    session.run("python", "-m", "pylint", "--recursive=y", "serialization_app")
