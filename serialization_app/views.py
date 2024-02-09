@@ -3,9 +3,10 @@ from http import HTTPMethod, HTTPStatus
 
 from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, render
+from rest_framework.exceptions import ValidationError
 
-from serialization_app.models import HexNut
-from serialization_app.serializers import HexNutSerializer
+from serialization_app.models import HexNut, WorkStation
+from serialization_app.serializers import HexNutSerializer, WorkStationSerializer
 
 # pylint: disable=unused-argument
 
@@ -74,3 +75,83 @@ def update_hex_nut(request):
         )
 
     return HttpResponse(f"Successful reques: {json_data}", status=HTTPStatus.OK)
+
+
+def get_workstations(request):
+    if request.method != HTTPMethod.GET:
+        return HttpResponse(f"Method {request.method} is forbinded")
+
+    return JsonResponse(
+        WorkStationSerializer(WorkStation.objects.all(), many=True).data, safe=False
+    )
+
+
+def get_workstation(request, **kwargs):
+    if request.method != HTTPMethod.GET:
+        return HttpResponse(f"Method {request.method} is forbinded")
+
+    return JsonResponse(
+        WorkStationSerializer(get_object_or_404(WorkStation, id=kwargs["id"])).data
+    )
+
+
+def create_workstation(request):
+    if request.method != HTTPMethod.POST:
+        return HttpResponse(f"Method {request.method} is forbinded")
+
+    try:
+        data = json.loads(request.body.decode())
+    except json.decoder.JSONDecodeError:
+        return HttpResponse(
+            f"Json decode error for {request.body.decode()}",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    workstaion_serializer = WorkStationSerializer(data=data)
+
+    try:
+        workstaion_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    workstaion_serializer.save()
+    return HttpResponse(status=HTTPStatus.CREATED)
+
+
+def update_workstation(request, **kwargs):
+    if request.method != HTTPMethod.PATCH:
+        return HttpResponse(f"Method {request.method} is forbinded")
+
+    try:
+        data = json.loads(request.body.decode())
+    except json.decoder.JSONDecodeError:
+        return HttpResponse(
+            f"Json decode error for {request.body.decode()}",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    workstaion_serializer = WorkStationSerializer(
+        get_object_or_404(WorkStation, id=kwargs["id"]), data=data
+    )
+
+    try:
+        workstaion_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    workstaion_serializer.save()
+    return HttpResponse(status=HTTPStatus.NO_CONTENT)

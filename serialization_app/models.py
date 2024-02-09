@@ -42,3 +42,22 @@ class HexNut(models.Model):
                 name="hex_nut_amout_pc_in_kg_min_value",
             ),
         ]
+
+
+class WorkStation(models.Model):
+    name = models.CharField(verbose_name="Name", max_length=7, unique=True)
+    ip_address = models.CharField(verbose_name="Ip address", max_length=15, unique=True)
+    disk_capacity = models.FloatField(verbose_name="Disk capacity GiB")
+    ram = models.FloatField(verbose_name="RAM GiB")
+    cpu = models.FloatField(verbose_name="CPU GiB")
+    serial_number = models.CharField(
+        verbose_name="Serial Number", max_length=19, unique=True
+    )
+    employee_name = models.CharField(
+        verbose_name="Employee name", max_length=255, null=True, blank=True
+    )
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+    def __str__(self):
+        return self.name
