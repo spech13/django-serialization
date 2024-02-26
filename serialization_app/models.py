@@ -61,3 +61,49 @@ class WorkStation(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Store(models.Model):
+    address = models.CharField(verbose_name="Address", max_length=255, unique=True)
+    manager_name = models.CharField(
+        verbose_name="Manager name", max_length=255, null=True, blank=True
+    )
+    manager_number = models.CharField(
+        verbose_name="Manager number", max_length=16, null=True, blank=True
+    )
+
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+    def __str__(self):
+        return self.address
+
+
+class Product(models.Model):
+    FURNITURE = "FURNITURE"
+    TOOL = "TOOL"
+    HOUSEHOLD_APPLIANCE = "HOUSEHOLD-APPLIANCE"
+
+    CATEGORIES = (
+        (FURNITURE, FURNITURE),
+        (TOOL, TOOL),
+        (HOUSEHOLD_APPLIANCE, HOUSEHOLD_APPLIANCE),
+    )
+
+    name = models.CharField(verbose_name="Name", max_length=255, unique=True)
+    category = models.CharField(
+        verbose_name="Category", max_length=255, choices=CATEGORIES
+    )
+    price = models.FloatField(verbose_name="Price", default=0)
+    vendor_code = models.CharField(
+        verbose_name="Vendor code", max_length=19, unique=True
+    )
+    store = models.ForeignKey(
+        Store, verbose_name="Store", on_delete=models.CASCADE, related_name="products"
+    )
+
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+    def __str__(self):
+        return self.name

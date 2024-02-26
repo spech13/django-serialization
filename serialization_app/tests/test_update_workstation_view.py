@@ -2,8 +2,12 @@ from http import HTTPStatus
 
 from django.test import TestCase
 
+from serialization_app.serializers import (
+    WORK_STATION_IP_ADDRESS_PATTERN,
+    WORK_STATION_NAME_PATTERN,
+    WORK_STATION_SERIAL_NUMBER_PATTERN,
+)
 from serialization_app.tests.factories import WorkStationFactory
-from serialization_app.serializers import WORK_STATION_NAME_PATTERN, WORK_STATION_IP_ADDRESS_PATTERN, WORK_STATION_SERIAL_NUMBER_PATTERN
 
 
 class UpdateWorkStationViewTestCase(TestCase):
@@ -87,7 +91,9 @@ class UpdateWorkStationViewTestCase(TestCase):
         error_number = 300
         self.data["ip_address"] = f"192.168.12.{error_number}"
         response = self.client.patch(
-            self.url.format(id=self.workstation.id), content_type="application/json", data=self.data
+            self.url.format(id=self.workstation.id),
+            content_type="application/json",
+            data=self.data,
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)

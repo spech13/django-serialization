@@ -5,8 +5,13 @@ from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, render
 from rest_framework.exceptions import ValidationError
 
-from serialization_app.models import HexNut, WorkStation
-from serialization_app.serializers import HexNutSerializer, WorkStationSerializer
+from serialization_app.models import HexNut, Product, Store, WorkStation
+from serialization_app.serializers import (
+    HexNutSerializer,
+    ProductSerializer,
+    StoreSerializer,
+    WorkStationSerializer,
+)
 
 # pylint: disable=unused-argument
 
@@ -155,3 +160,184 @@ def update_workstation(request, **kwargs):
 
     workstaion_serializer.save()
     return HttpResponse(status=HTTPStatus.NO_CONTENT)
+
+
+def create_store(request):
+    if request.method != HTTPMethod.POST:
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    data = request.body.decode()
+
+    try:
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    store_serializer = StoreSerializer(data=data)
+
+    try:
+        store_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    store_serializer.save()
+    return JsonResponse({}, status=HTTPStatus.CREATED)
+
+
+def update_store(request, **kwargs):
+    if request.method != HTTPMethod.PATCH:
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    data = request.body.decode()
+
+    try:
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    store_serializer = StoreSerializer(
+        get_object_or_404(Store, id=kwargs["id"]), data=data
+    )
+
+    try:
+        store_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    store_serializer.save()
+    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)
+
+
+def partial_update_store(request, **kwargs):
+    if request.method != HTTPMethod.PATCH:
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    data = request.body.decode()
+
+    try:
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    store_serializer = StoreSerializer(
+        get_object_or_404(Store, id=kwargs["id"]), data=data, partial=True
+    )
+
+    try:
+        store_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    store_serializer.save()
+    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)
+
+
+def create_product(request):
+    if request.method != HTTPMethod.POST:
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    data = request.body.decode()
+
+    try:
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    product_serializer = ProductSerializer(data=data)
+
+    try:
+        product_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    product_serializer.save()
+    return JsonResponse({}, status=HTTPStatus.CREATED)
+
+
+def update_product(request, **kwargs):
+    if request.method != HTTPMethod.PATCH:
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    data = request.body.decode()
+
+    try:
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    product_serializer = ProductSerializer(
+        get_object_or_404(Product, id=kwargs["id"]), data=data
+    )
+
+    try:
+        product_serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    product_serializer.save()
+    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)

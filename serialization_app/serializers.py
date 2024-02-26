@@ -3,11 +3,13 @@ import re
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from serialization_app.models import HexNut, WorkStation
+from serialization_app.models import HexNut, Product, Store, WorkStation
 
 WORK_STATION_NAME_PATTERN = r"WS-[0-9]{4}$"
 WORK_STATION_IP_ADDRESS_PATTERN = r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"
 WORK_STATION_SERIAL_NUMBER_PATTERN = r"^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[A-Z]{4}$"
+STORE_MANAGER_NUMBER_PATTERN = r"^\+7 [0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}$"
+PRODUCT_VENDOR_CODE_PATTERN = r"^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[A-Z]{4}$"
 
 
 class HexNutSerializer(serializers.Serializer):
@@ -108,3 +110,44 @@ class WorkStationSerializer(serializers.ModelSerializer):
             )
 
         return data
+
+
+class StoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = ["address", "manager_name", "manager_number"]
+
+    def validate_manager_number(self, value):
+        if not re.match(STORE_MANAGER_NUMBER_PATTERN, value):
+            raise serializers.ValidationError(
+                "manger number must match"
+                f" the pattern {STORE_MANAGER_NUMBER_PATTERN}"
+            )
+
+        return value
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    store_id = serializers.PrimaryKeyRelatedField(
+        queryset=Store.objects.all(), source="store"
+    )
+
+    class Meta:
+        model = Product
+        fields = ["name", "category", "price", "vendor_code", "store_id"]
+
+    def validate_vendor_code(self, value):
+        if not re.match(PRODUCT_VENDOR_CODE_PATTERN, value):
+            raise serializers.ValidationError(
+                f"vendor_code must match the pattern {PRODUCT_VENDOR_CODE_PATTERN}"
+            )
+
+        return value
+
+    def validate_category(self, value):
+        if (value, value) not in Product.CATEGORIES:
+            raise serializers.ValidationError(
+                f"category must be in {Product.CATEGORIES}"
+            )
+
+        return value

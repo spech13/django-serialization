@@ -1,8 +1,8 @@
 # pylint: disable=consider-using-f-string
-from factory import Sequence
+from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
-from serialization_app.models import HexNut, WorkStation
+from serialization_app.models import HexNut, Product, Store, WorkStation
 
 
 class HexNutFactory(DjangoModelFactory):
@@ -30,3 +30,23 @@ class WorkStationFactory(DjangoModelFactory):
     cpu = 2
     serial_number = Sequence("SERI-ALNU-BERS-ERIA-{}".format)
     employee_name = Sequence("employee-name-{}".format)
+
+
+class StoreFactory(DjangoModelFactory):
+    class Meta:
+        model = Store
+
+    address = Sequence("store-{}".format)
+    manager_name = Sequence("manger-{}".format)
+    manager_number = Sequence("manager-number-{}".format)
+
+
+class ProductFactory(DjangoModelFactory):
+    class Meta:
+        model = Product
+
+    name = Sequence("product-{}".format)
+    category = Sequence("category-{}".format)
+    price = 12.6
+    vendor_code = Sequence("vendor-code-{}".format)
+    store = SubFactory(StoreFactory)
