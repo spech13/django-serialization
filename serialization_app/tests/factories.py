@@ -2,7 +2,14 @@
 from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
-from serialization_app.models import HexNut, Product, Store, WorkStation
+from serialization_app.models import (
+    Department,
+    Employee,
+    HexNut,
+    Product,
+    Store,
+    WorkStation,
+)
 
 
 class HexNutFactory(DjangoModelFactory):
@@ -50,3 +57,22 @@ class ProductFactory(DjangoModelFactory):
     price = 12.6
     vendor_code = Sequence("vendor-code-{}".format)
     store = SubFactory(StoreFactory)
+
+
+class DepartmentFactory(DjangoModelFactory):
+    class Meta:
+        model = Department
+
+    name = Sequence("department-{}".format)
+    employees_number = 50
+    description = Sequence("desctiption-{}".format)
+
+
+class EmployeeFactory(DjangoModelFactory):
+    class Meta:
+        model = Employee
+
+    first_name = Sequence("first-name-{}".format)
+    last_name = Sequence("last-name-{}".format)
+    age = 35
+    department = SubFactory(DepartmentFactory)

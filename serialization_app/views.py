@@ -5,8 +5,17 @@ from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, render
 from rest_framework.exceptions import ValidationError
 
-from serialization_app.models import HexNut, Product, Store, WorkStation
+from serialization_app.models import (
+    Department,
+    Employee,
+    HexNut,
+    Product,
+    Store,
+    WorkStation,
+)
 from serialization_app.serializers import (
+    DepartmentSerializer,
+    EmployeeSerializer,
     HexNutSerializer,
     ProductSerializer,
     StoreSerializer,
@@ -100,22 +109,27 @@ def get_workstation(request, **kwargs):
     )
 
 
-def create_workstation(request):
+def create(request, serializer_class):
     if request.method != HTTPMethod.POST:
-        return HttpResponse(f"Method {request.method} is forbinded")
-
-    try:
-        data = json.loads(request.body.decode())
-    except json.decoder.JSONDecodeError:
-        return HttpResponse(
-            f"Json decode error for {request.body.decode()}",
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    workstaion_serializer = WorkStationSerializer(data=data)
+    data = request.body.decode()
 
     try:
-        workstaion_serializer.is_valid(raise_exception=True)
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    serializer = serializer_class(data=json.loads(request.body.decode()))
+
+    try:
+        serializer.is_valid(raise_exception=True)
     except ValidationError as validation_error:
         return JsonResponse(
             {
@@ -126,218 +140,99 @@ def create_workstation(request):
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    workstaion_serializer.save()
-    return HttpResponse(status=HTTPStatus.CREATED)
+    serializer.save()
+    return JsonResponse({}, status=HTTPStatus.CREATED)
+
+
+def update(request, obj, serializer_class, partial=False):
+    if request.method != HTTPMethod.PATCH:
+        return JsonResponse(
+            {"error_message": f"Method {request.method} is forbinded"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    data = request.body.decode()
+
+    try:
+        data = json.loads(data)
+    except json.decoder.JSONDecodeError:
+        return JsonResponse(
+            {"error_message": f"Json decode error for {data}"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    serializer = serializer_class(
+        obj, data=json.loads(request.body.decode()), partial=partial
+    )
+
+    try:
+        serializer.is_valid(raise_exception=True)
+    except ValidationError as validation_error:
+        return JsonResponse(
+            {
+                "validation_errors": {
+                    key: str(value[0]) for key, value in validation_error.detail.items()
+                }
+            },
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    serializer.save()
+    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)
+
+
+def create_workstation(request):
+    return create(request, WorkStationSerializer)
 
 
 def update_workstation(request, **kwargs):
-    if request.method != HTTPMethod.PATCH:
-        return HttpResponse(f"Method {request.method} is forbinded")
-
-    try:
-        data = json.loads(request.body.decode())
-    except json.decoder.JSONDecodeError:
-        return HttpResponse(
-            f"Json decode error for {request.body.decode()}",
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    workstaion_serializer = WorkStationSerializer(
-        get_object_or_404(WorkStation, id=kwargs["id"]), data=data
+    return update(
+        request, get_object_or_404(WorkStation, id=kwargs["id"]), WorkStationSerializer
     )
-
-    try:
-        workstaion_serializer.is_valid(raise_exception=True)
-    except ValidationError as validation_error:
-        return JsonResponse(
-            {
-                "validation_errors": {
-                    key: str(value[0]) for key, value in validation_error.detail.items()
-                }
-            },
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    workstaion_serializer.save()
-    return HttpResponse(status=HTTPStatus.NO_CONTENT)
 
 
 def create_store(request):
-    if request.method != HTTPMethod.POST:
-        return JsonResponse(
-            {"error_message": f"Method {request.method} is forbinded"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    data = request.body.decode()
-
-    try:
-        data = json.loads(data)
-    except json.decoder.JSONDecodeError:
-        return JsonResponse(
-            {"error_message": f"Json decode error for {data}"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    store_serializer = StoreSerializer(data=data)
-
-    try:
-        store_serializer.is_valid(raise_exception=True)
-    except ValidationError as validation_error:
-        return JsonResponse(
-            {
-                "validation_errors": {
-                    key: str(value[0]) for key, value in validation_error.detail.items()
-                }
-            },
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    store_serializer.save()
-    return JsonResponse({}, status=HTTPStatus.CREATED)
+    return create(request, StoreSerializer)
 
 
 def update_store(request, **kwargs):
-    if request.method != HTTPMethod.PATCH:
-        return JsonResponse(
-            {"error_message": f"Method {request.method} is forbinded"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    data = request.body.decode()
-
-    try:
-        data = json.loads(data)
-    except json.decoder.JSONDecodeError:
-        return JsonResponse(
-            {"error_message": f"Json decode error for {data}"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    store_serializer = StoreSerializer(
-        get_object_or_404(Store, id=kwargs["id"]), data=data
-    )
-
-    try:
-        store_serializer.is_valid(raise_exception=True)
-    except ValidationError as validation_error:
-        return JsonResponse(
-            {
-                "validation_errors": {
-                    key: str(value[0]) for key, value in validation_error.detail.items()
-                }
-            },
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    store_serializer.save()
-    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)
+    return update(request, get_object_or_404(Store, id=kwargs["id"]), StoreSerializer)
 
 
 def partial_update_store(request, **kwargs):
-    if request.method != HTTPMethod.PATCH:
-        return JsonResponse(
-            {"error_message": f"Method {request.method} is forbinded"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    data = request.body.decode()
-
-    try:
-        data = json.loads(data)
-    except json.decoder.JSONDecodeError:
-        return JsonResponse(
-            {"error_message": f"Json decode error for {data}"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    store_serializer = StoreSerializer(
-        get_object_or_404(Store, id=kwargs["id"]), data=data, partial=True
+    return update(
+        request,
+        get_object_or_404(Store, id=kwargs["id"]),
+        StoreSerializer,
+        partial=True,
     )
-
-    try:
-        store_serializer.is_valid(raise_exception=True)
-    except ValidationError as validation_error:
-        return JsonResponse(
-            {
-                "validation_errors": {
-                    key: str(value[0]) for key, value in validation_error.detail.items()
-                }
-            },
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    store_serializer.save()
-    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)
 
 
 def create_product(request):
-    if request.method != HTTPMethod.POST:
-        return JsonResponse(
-            {"error_message": f"Method {request.method} is forbinded"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    data = request.body.decode()
-
-    try:
-        data = json.loads(data)
-    except json.decoder.JSONDecodeError:
-        return JsonResponse(
-            {"error_message": f"Json decode error for {data}"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    product_serializer = ProductSerializer(data=data)
-
-    try:
-        product_serializer.is_valid(raise_exception=True)
-    except ValidationError as validation_error:
-        return JsonResponse(
-            {
-                "validation_errors": {
-                    key: str(value[0]) for key, value in validation_error.detail.items()
-                }
-            },
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    product_serializer.save()
-    return JsonResponse({}, status=HTTPStatus.CREATED)
+    return create(request, ProductSerializer)
 
 
 def update_product(request, **kwargs):
-    if request.method != HTTPMethod.PATCH:
-        return JsonResponse(
-            {"error_message": f"Method {request.method} is forbinded"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    data = request.body.decode()
-
-    try:
-        data = json.loads(data)
-    except json.decoder.JSONDecodeError:
-        return JsonResponse(
-            {"error_message": f"Json decode error for {data}"},
-            status=HTTPStatus.BAD_REQUEST,
-        )
-
-    product_serializer = ProductSerializer(
-        get_object_or_404(Product, id=kwargs["id"]), data=data
+    return update(
+        request, get_object_or_404(Product, id=kwargs["id"]), ProductSerializer
     )
 
-    try:
-        product_serializer.is_valid(raise_exception=True)
-    except ValidationError as validation_error:
-        return JsonResponse(
-            {
-                "validation_errors": {
-                    key: str(value[0]) for key, value in validation_error.detail.items()
-                }
-            },
-            status=HTTPStatus.BAD_REQUEST,
-        )
 
-    product_serializer.save()
-    return JsonResponse({}, status=HTTPStatus.NO_CONTENT)
+def create_department(request):
+    return create(request, DepartmentSerializer)
+
+
+def update_department(request, **kwargs):
+    return update(
+        request, get_object_or_404(Department, id=kwargs["id"]), DepartmentSerializer
+    )
+
+
+def create_employee(request):
+    return create(request, EmployeeSerializer)
+
+
+def update_employee(request, **kwargs):
+    return update(
+        request, get_object_or_404(Employee, id=kwargs["id"]), EmployeeSerializer
+    )

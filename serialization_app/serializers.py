@@ -3,7 +3,14 @@ import re
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from serialization_app.models import HexNut, Product, Store, WorkStation
+from serialization_app.models import (
+    Department,
+    Employee,
+    HexNut,
+    Product,
+    Store,
+    WorkStation,
+)
 
 WORK_STATION_NAME_PATTERN = r"WS-[0-9]{4}$"
 WORK_STATION_IP_ADDRESS_PATTERN = r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"
@@ -151,3 +158,59 @@ class ProductSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+class DepartmentSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    employees_number = serializers.IntegerField()
+    description = serializers.CharField()
+
+    def create(self, validated_data):
+        return Department.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        Department.objects.filter(id=instance.id).update(**validated_data)
+        return instance
+
+
+class EmployeeSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    age = serializers.IntegerField()
+
+    department = DepartmentSerializer(required=False)
+    department_id = serializers.IntegerField(required=False)
+
+    def create(self, validated_data):
+        if validated_data.get("department_id"):
+            return Employee.objects.create(
+                department=Department.objects.get(
+                    id=validated_data.pop("department_id")
+                ),
+                **validated_data,
+            )
+
+        if validated_data.get("department"):
+            return Employee.objects.create(
+                department=Department.objects.create(
+                    **validated_data.pop("department")
+                ),
+                **validated_data,
+            )
+
+        return Employee.objects.create(
+            department=Department.objects.get(id=Department.get_default_id()),
+            **validated_data,
+        )
+
+    def update(self, instance, validated_data):
+        if validated_data.get("department_id"):
+            Employee.objects.filter(id=instance.id).update(
+                department=Department.objects.get(
+                    id=validated_data.pop("department_id")
+                ),
+                **validated_data,
+            )
+
+        Employee.objects.filter(id=instance.id).update(**validated_data)
+        return instance

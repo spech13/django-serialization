@@ -1,6 +1,8 @@
 from django.urls import path
 
 from serialization_app.views import (
+    create_department,
+    create_employee,
     create_hex_nut,
     create_product,
     create_store,
@@ -10,6 +12,8 @@ from serialization_app.views import (
     get_workstation,
     get_workstations,
     partial_update_store,
+    update_department,
+    update_employee,
     update_hex_nut,
     update_product,
     update_store,
@@ -36,4 +40,8 @@ urlpatterns = [
     ),
     path("products/create", create_product, name="create-product"),
     path("products/<int:id>/update", update_product, name="update-product"),
+    path("departments/create", create_department, name="create-department"),
+    path("departments/<int:id>/update", update_department, name="update-department"),
+    path("employees/create", create_employee, name="create-employee"),
+    path("employees/<int:id>/update", update_employee, name="update-employee"),
 ]

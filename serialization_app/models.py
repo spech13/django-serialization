@@ -107,3 +107,45 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Department(models.Model):
+    name = models.CharField(verbose_name="Name", max_length=255, unique=True)
+    employees_number = models.SmallIntegerField(verbose_name="Employees number")
+    description = models.CharField(
+        verbose_name="Description", max_length=255, null=True, blank=True
+    )
+
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+    @classmethod
+    def get_default_id(cls):
+        department, new = cls.objects.get_or_create(
+            name="Free",
+            defaults={"employees_number": 0, "description": "Free employee"},
+        )
+        return (department or new).id
+
+    def __str__(self):
+        return self.name
+
+
+class Employee(models.Model):
+    first_name = models.CharField(verbose_name="First name", max_length=255)
+    last_name = models.CharField(verbose_name="Last name", max_length=255)
+    age = models.SmallIntegerField(verbose_name="Age")
+
+    department = models.ForeignKey(
+        Department,
+        verbose_name="Department",
+        on_delete=models.SET_DEFAULT,
+        related_name="employees",
+        default=Department.get_default_id,
+    )
+
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
