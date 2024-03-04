@@ -1,17 +1,14 @@
-from http import HTTPStatus
-
 from django.test import TestCase
 
 from serialization_app.tests.factories import WorkStationFactory
+from serialization_app.tests.get_objects_view import GetObjectsView
 
 
-class GetWorkStationsViewTestCase(TestCase):
-    url = "/serialization/workstations/get/"
+class GetWorkStationsViewTestCase(GetObjectsView, TestCase):
+    url = "/serialization/workstations/get"
 
-    def test_get_workstations_view(self):
-        workstations = WorkStationFactory.create_batch(3)
-
-        expected_result = [
+    def setUp(self):
+        self.expected_result = [
             {
                 "id": workstation.id,
                 "name": workstation.name,
@@ -22,9 +19,5 @@ class GetWorkStationsViewTestCase(TestCase):
                 "serial_number": workstation.serial_number,
                 "employee_name": workstation.employee_name,
             }
-            for workstation in workstations
+            for workstation in WorkStationFactory.create_batch(3)
         ]
-
-        response = self.client.get(self.url, content_type="application/json")
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertListEqual(response.json(), expected_result)

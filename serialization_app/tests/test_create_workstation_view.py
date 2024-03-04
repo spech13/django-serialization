@@ -8,48 +8,27 @@ from serialization_app.serializers import (
     WORK_STATION_NAME_PATTERN,
     WORK_STATION_SERIAL_NUMBER_PATTERN,
 )
+from serialization_app.tests.create_object_view import CONTENT_TYPE, CreateObjectView
 
 
-class CreateWrokStationViewTestCase(TestCase):
-    url = "/serialization/workstations/create/"
-
-    def setUp(self):
-        self.data = {
-            "name": "WS-0001",
-            "ip_address": "192.168.12.9",
-            "disk_capacity": 10,
-            "ram": 4,
-            "cpu": 2,
-            "serial_number": "KKDJ-SKLD-DOKS-LSKD",
-            "employee_name": "Mark Josev",
-        }
-
-    def test_create_workstation_view(self):
-        response = self.client.post(
-            self.url, content_type="application/json", data=self.data
-        )
-
-        self.assertEqual(response.status_code, HTTPStatus.CREATED)
-
-        workstation = WorkStation.objects.get()
-        self.assertDictEqual(
-            self.data,
-            {
-                "name": workstation.name,
-                "ip_address": workstation.ip_address,
-                "disk_capacity": workstation.disk_capacity,
-                "ram": workstation.ram,
-                "cpu": workstation.cpu,
-                "serial_number": workstation.serial_number,
-                "employee_name": workstation.employee_name,
-            },
-        )
+class CreateWrokStationViewTestCase(CreateObjectView, TestCase):
+    url = "/serialization/workstations/create"
+    model_class = WorkStation
+    data = {
+        "name": "WS-0001",
+        "ip_address": "192.168.12.9",
+        "disk_capacity": 10,
+        "ram": 4,
+        "cpu": 2,
+        "serial_number": "KKDJ-SKLD-DOKS-LSKD",
+        "employee_name": "Mark Josev",
+    }
 
     def test_not_valid_name(self):
-        self.data["name"] = "WS-001"
-
         response = self.client.post(
-            self.url, content_type="application/json", data=self.data
+            self.url,
+            content_type=CONTENT_TYPE,
+            data=self.get_and_update_data({"name": "WS-001"}),
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
@@ -64,10 +43,9 @@ class CreateWrokStationViewTestCase(TestCase):
         )
 
     def test_not_valid_ip_address(self):
-        self.data["ip_address"] = "192.xxx.12.9"
-        response = self.client.post(
-            self.url, content_type="application/json", data=self.data
-        )
+        data = self.get_and_update_data({"ip_address": "192.xxx.12.9"})
+
+        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=data)
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertDictEqual(
@@ -81,10 +59,8 @@ class CreateWrokStationViewTestCase(TestCase):
         )
 
         error_number = 300
-        self.data["ip_address"] = f"192.168.12.{error_number}"
-        response = self.client.post(
-            self.url, content_type="application/json", data=self.data
-        )
+        data["ip_address"] = f"192.168.12.{error_number}"
+        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=data)
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertDictEqual(
@@ -97,10 +73,10 @@ class CreateWrokStationViewTestCase(TestCase):
         )
 
     def test_not_valid_serial_number(self):
-        self.data["serial_number"] = "JFKD-XXX-DJFK-LLL"
-
         response = self.client.post(
-            self.url, content_type="application/json", data=self.data
+            self.url,
+            content_type=CONTENT_TYPE,
+            data=self.get_and_update_data({"serial_number": "JFKD-XXX-DJFK-LLL"}),
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
@@ -115,11 +91,10 @@ class CreateWrokStationViewTestCase(TestCase):
         )
 
     def test_not_valid_cpu_ram_disk_capacity(self):
-        self.data["cpu"] = 4
-        self.data["ram"] = 2
-
         response = self.client.post(
-            self.url, content_type="application/json", data=self.data
+            self.url,
+            content_type=CONTENT_TYPE,
+            data=self.get_and_update_data({"cpu": 4, "ram": 2}),
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)

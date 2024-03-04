@@ -1,4 +1,6 @@
 # pylint: disable=consider-using-f-string
+from datetime import datetime
+
 from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
@@ -8,6 +10,7 @@ from serialization_app.models import (
     HexNut,
     Product,
     Store,
+    User,
     WorkStation,
 )
 
@@ -76,3 +79,13 @@ class EmployeeFactory(DjangoModelFactory):
     last_name = Sequence("last-name-{}".format)
     age = 35
     department = SubFactory(DepartmentFactory)
+
+
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = User
+
+    name = Sequence("user-name-{}".format)
+    password = Sequence("user-password-{}".format)
+    created_at = datetime.now()
+    updated_at = datetime.now()

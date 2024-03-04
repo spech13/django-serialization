@@ -149,3 +149,11 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class User(models.Model):
+    name = models.CharField(verbose_name="Name", max_length=255)
+    password = models.CharField(verbose_name="Password", max_length=255)
+
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)

@@ -9,6 +9,7 @@ from serialization_app.models import (
     HexNut,
     Product,
     Store,
+    User,
     WorkStation,
 )
 
@@ -82,11 +83,6 @@ class WorkStationSerializer(serializers.ModelSerializer):
         ]
 
     def validate_name(self, value):
-        if len(value) > 7:
-            raise serializers.ValidationError(
-                "length of name field must not exceed 7 characters"
-            )
-
         if not re.match(WORK_STATION_NAME_PATTERN, value):
             raise serializers.ValidationError(
                 "name field must match the pattern "
@@ -96,11 +92,6 @@ class WorkStationSerializer(serializers.ModelSerializer):
         return value
 
     def validate_serial_number(self, value):
-        if len(value) > 19:
-            raise serializers.ValidationError(
-                "length of serial_number field must not exceed 15 characters"
-            )
-
         if not re.match(WORK_STATION_SERIAL_NUMBER_PATTERN, value):
             raise serializers.ValidationError(
                 "serial_number field must match "
@@ -204,13 +195,12 @@ class EmployeeSerializer(serializers.Serializer):
         )
 
     def update(self, instance, validated_data):
-        if validated_data.get("department_id"):
-            Employee.objects.filter(id=instance.id).update(
-                department=Department.objects.get(
-                    id=validated_data.pop("department_id")
-                ),
-                **validated_data,
-            )
-
         Employee.objects.filter(id=instance.id).update(**validated_data)
         return instance
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
+        extra_kwargs = {"password": {"write_only": True}}

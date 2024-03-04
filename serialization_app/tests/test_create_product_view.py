@@ -4,50 +4,27 @@ from django.test import TestCase
 
 from serialization_app.models import Product
 from serialization_app.serializers import PRODUCT_VENDOR_CODE_PATTERN
+from serialization_app.tests.create_object_view import CONTENT_TYPE, CreateObjectView
 from serialization_app.tests.factories import StoreFactory
 
-CONTENT_TYPE = "application/json"
 
-
-class CreateProductViewTestCase(TestCase):
+class CreateProductViewTestCase(CreateObjectView, TestCase):
     url = "/serialization/products/create"
+    model_class = Product
 
     def setUp(self):
-        self.store = StoreFactory()
         self.data = {
             "name": "product-name",
             "category": Product.FURNITURE,
             "price": 12.6,
             "vendor_code": "JKKD-DKJF-SKJD-KSLD",
-            "store_id": self.store.id,
+            "store_id": StoreFactory().id,
         }
 
-    def test_create_product(self):
-        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=self.data)
-
-        self.assertEqual(response.status_code, HTTPStatus.CREATED)
-        Product.objects.get()
-
-    def test_forbinded_method(self):
-        response = self.client.get(self.url)
-
-        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
-        self.assertDictEqual(
-            response.json(), {"error_message": "Method GET is forbinded"}
-        )
-
-    def test_decode_data_error(self):
-        self.data = "some data"
-        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=self.data)
-
-        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
-        self.assertDictEqual(
-            response.json(), {"error_message": f"Json decode error for {self.data}"}
-        )
-
     def test_no_valid_vendor_code(self):
-        self.data["vendor_code"] = "vendor-code"
-        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=self.data)
+        data = self.get_and_update_data({"vendor_code": "vendor-code"})
+
+        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=data)
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertDictEqual(
@@ -60,8 +37,8 @@ class CreateProductViewTestCase(TestCase):
             },
         )
 
-        self.data["vendor_code"] = "very-long-vendor-code"
-        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=self.data)
+        data["vendor_code"] = "very-long-vendor-code"
+        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=data)
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertDictEqual(
@@ -74,8 +51,11 @@ class CreateProductViewTestCase(TestCase):
         )
 
     def test_no_valid_category(self):
-        self.data["category"] = "no-valid-category"
-        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=self.data)
+        response = self.client.post(
+            self.url,
+            content_type=CONTENT_TYPE,
+            data=self.get_and_update_data({"category": "no-valid-category"}),
+        )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertDictEqual(

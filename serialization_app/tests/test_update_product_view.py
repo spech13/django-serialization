@@ -5,71 +5,30 @@ from django.test import TestCase
 from serialization_app.models import Product
 from serialization_app.serializers import PRODUCT_VENDOR_CODE_PATTERN
 from serialization_app.tests.factories import ProductFactory, StoreFactory
+from serialization_app.tests.update_object_view import CONTENT_TYPE, UpdateObjectView
 
-CONTENT_TYPE = "application/json"
 
-
-class UpdateProductViewTestCase(TestCase):
+class UpdateProductViewTestCase(UpdateObjectView, TestCase):
     url = "/serialization/products/{id}/update"
+    factory_class = ProductFactory
+    data = {
+        "name": "product-name",
+        "category": Product.FURNITURE,
+        "price": 12.6,
+        "vendor_code": "JKKD-DKJF-SKJD-KSLD",
+    }
 
     def setUp(self):
-        self.store = StoreFactory()
-        self.product = ProductFactory()
-        self.data = {
-            "name": "product-name",
-            "category": Product.FURNITURE,
-            "price": 12.6,
-            "vendor_code": "JKKD-DKJF-SKJD-KSLD",
-            "store_id": self.store.id,
-        }
-
-    def test_update_product(self):
-        response = self.client.patch(
-            self.url.format(id=self.product.id),
-            content_type=CONTENT_TYPE,
-            data=self.data,
-        )
-        self.product.refresh_from_db()
-
-        self.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
-        self.assertDictEqual(
-            self.data,
-            {
-                "name": self.product.name,
-                "category": self.product.category,
-                "price": self.product.price,
-                "vendor_code": self.product.vendor_code,
-                "store_id": self.product.store.id,
-            },
-        )
-
-    def test_forbinded_method(self):
-        response = self.client.get(self.url.format(id=self.product.id))
-
-        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
-        self.assertDictEqual(
-            response.json(), {"error_message": "Method GET is forbinded"}
-        )
-
-    def test_decode_data_error(self):
-        self.data = "some data"
-        response = self.client.patch(
-            self.url.format(id=self.product.id),
-            content_type=CONTENT_TYPE,
-            data=self.data,
-        )
-
-        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
-        self.assertDictEqual(
-            response.json(), {"error_message": f"Json decode error for {self.data}"}
-        )
+        super().setUp()
+        self.data["store_id"] = StoreFactory().id
 
     def test_no_valid_vendor_code(self):
-        self.data["vendor_code"] = "vendor-code"
+        product = ProductFactory()
+
         response = self.client.patch(
-            self.url.format(id=self.product.id),
+            self.url.format(id=product.id),
             content_type=CONTENT_TYPE,
-            data=self.data,
+            data=self.get_and_update_data({"vendor_code": "no-valid-vc"}),
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
@@ -83,11 +42,10 @@ class UpdateProductViewTestCase(TestCase):
             },
         )
 
-        self.data["vendor_code"] = "very-long-vendor-code"
         response = self.client.patch(
-            self.url.format(id=self.product.id),
+            self.url.format(id=product.id),
             content_type=CONTENT_TYPE,
-            data=self.data,
+            data=self.get_and_update_data({"vendor_code": "very-long-vendor-code"}),
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
@@ -101,11 +59,11 @@ class UpdateProductViewTestCase(TestCase):
         )
 
     def test_no_valid_category(self):
-        self.data["category"] = "no-valid-category"
+
         response = self.client.patch(
-            self.url.format(id=self.product.id),
+            self.url.format(id=ProductFactory().id),
             content_type=CONTENT_TYPE,
-            data=self.data,
+            data=self.get_and_update_data({"category": "no-valid-category"}),
         )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
