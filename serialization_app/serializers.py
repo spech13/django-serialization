@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from serialization_app.models import (
+    Book,
     Department,
     Employee,
     HexNut,
@@ -204,3 +205,37 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
         extra_kwargs = {"password": {"write_only": True}}
+
+
+class BookListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        books = [Book(**item) for item in validated_data]
+        return Book.objects.bulk_create(books)
+
+    def update(self, instance, validated_data):
+        book_mapping = {book.id: book for book in instance}
+        data_mapping = {item["id"]: item for item in validated_data}
+
+        ret = []
+        for book_id, data in data_mapping.items():
+            book = book_mapping.get(book_id, None)
+            if book is None:
+                ret.append(self.child.create(data))
+            else:
+                ret.append(self.child.update(book, data))
+
+        return ret
+
+
+class BookSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
+    @classmethod
+    def many_init(cls, *args, **kwargs):
+        kwargs["child"] = cls()
+        return BookListSerializer(*args, **kwargs)
+
+    class Meta:
+        model = Book
+        fields = ["id", "title", "author", "number_book_pages"]
+        list_serializer_class = BookListSerializer

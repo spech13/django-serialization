@@ -1,6 +1,8 @@
 from django.urls import path
 
 from serialization_app.views import (
+    create_book,
+    create_books,
     create_department,
     create_employee,
     create_hex_nut,
@@ -8,6 +10,8 @@ from serialization_app.views import (
     create_store,
     create_user,
     create_workstation,
+    get_book,
+    get_books,
     get_hex_nut,
     get_hex_nuts,
     get_product,
@@ -19,6 +23,7 @@ from serialization_app.views import (
     get_workstation,
     get_workstations,
     partial_update_store,
+    update_book,
     update_department,
     update_employee,
     update_hex_nut,
@@ -26,6 +31,7 @@ from serialization_app.views import (
     update_store,
     update_user,
     update_workstation,
+    update_books,
 )
 
 urlpatterns = [
@@ -58,4 +64,10 @@ urlpatterns = [
     path("users/<int:id>/get", get_user, name="get-user"),
     path("users/create", create_user, name="create-user"),
     path("users/<int:id>/update", update_user, name="update-user"),
+    path("books/get", get_books, name="get-books"),
+    path("books/<int:id>/get", get_book, name="get-book"),
+    path("books/create", create_book, name="create-book"),
+    path("books/<int:id>/update", update_book, name="update-book"),
+    path("books/create/many", create_books, name="create-books"),
+    path("books/update/many", update_books, name="update-books")
 ]

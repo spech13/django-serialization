@@ -157,3 +157,22 @@ class User(models.Model):
 
     created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+
+class Book(models.Model):
+    title = models.CharField(verbose_name="Title", max_length=255)
+    author = models.CharField(verbose_name="Author", max_length=255)
+    number_book_pages = models.IntegerField()
+
+    created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        constraints = [
+            CheckConstraint(
+                check=Q(number_book_pages__gte=0), name="positive_number_book_pages"
+            )
+        ]

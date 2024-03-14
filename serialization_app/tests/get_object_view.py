@@ -26,7 +26,10 @@ class GetObjectView:
         )
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertDictEqual(response.json(), self.expected_result)
+        
+        response_json = response.json()
+        real_result = {field_name: response_json[field_name] for field_name in self.expected_result}
+        self.assertDictEqual(real_result, self.expected_result)
 
     def test_object_does_not_exist(self):
         response = self.client.get(

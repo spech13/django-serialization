@@ -1,0 +1,14 @@
+from django.test import TestCase
+
+from serialization_app.tests.factories import BookFactory
+from serialization_app.tests.get_object_view import GetObjectView
+
+
+class GetBookViewTestCase(GetObjectView, TestCase):
+    url = "/serialization/books/{id}/get"
+    fields = [
+        "title",
+        "author",
+        "number_book_pages",
+    ]
+    factory_class = BookFactory

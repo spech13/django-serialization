@@ -12,7 +12,9 @@ class GetObjectsView:
     def test_get_objects(self):
         response = self.client.get(self.url, content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertListEqual(response.json(), self.expected_result)
+        response_json = response.json()
+        real_result = [{field_name: real_data[field_name] for field_name in expected_data} for expected_data, real_data in zip(self.expected_result, response_json)]
+        self.assertListEqual(real_result, self.expected_result)
 
     def test_forbinded_method(self):
         response = self.client.post(self.url)

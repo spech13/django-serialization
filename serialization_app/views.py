@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 
 from serialization_app.models import (
+    Book,
     Department,
     Employee,
     HexNut,
@@ -15,6 +16,7 @@ from serialization_app.models import (
     WorkStation,
 )
 from serialization_app.serializers import (
+    BookSerializer,
     DepartmentSerializer,
     EmployeeSerializer,
     HexNutSerializer,
@@ -47,7 +49,7 @@ def get_objects(request, queryset, serializer_class):
     return JsonResponse(serializer_class(queryset, many=True).data, safe=False)
 
 
-def create(request, serializer_class):
+def create_object(request, serializer_class, many=False):
     if request.method != HTTPMethod.POST:
         return JsonResponse(
             {"error_message": f"Method {request.method} is forbinded"},
@@ -64,7 +66,7 @@ def create(request, serializer_class):
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    serializer = serializer_class(data=json.loads(request.body.decode()))
+    serializer = serializer_class(data=json.loads(request.body.decode()), many=many)
 
     try:
         serializer.is_valid(raise_exception=True)
@@ -82,7 +84,7 @@ def create(request, serializer_class):
     return JsonResponse({}, status=HTTPStatus.CREATED)
 
 
-def update(request, obj, serializer_class, partial=False):
+def update_object(request, obj, serializer_class, partial=False, many=False):
     if request.method != HTTPMethod.PATCH:
         return JsonResponse(
             {"error_message": f"Method {request.method} is forbinded"},
@@ -98,9 +100,9 @@ def update(request, obj, serializer_class, partial=False):
             {"error_message": f"Json decode error for {data}"},
             status=HTTPStatus.BAD_REQUEST,
         )
-
+    
     serializer = serializer_class(
-        obj, data=json.loads(request.body.decode()), partial=partial
+        obj, data=json.loads(request.body.decode()), partial=partial, many=many
     )
 
     try:
@@ -130,11 +132,13 @@ def get_hex_nut(request, **kwargs):
 
 
 def create_hex_nut(request):
-    return create(request, HexNutSerializer)
+    return create_object(request, HexNutSerializer)
 
 
 def update_hex_nut(request, **kwargs):
-    return update(request, get_object_or_404(HexNut, id=kwargs["id"]), HexNutSerializer)
+    return update_object(
+        request, get_object_or_404(HexNut, id=kwargs["id"]), HexNutSerializer
+    )
 
 
 def get_workstations(request):
@@ -148,12 +152,12 @@ def get_workstation(request, **kwargs):
 
 
 def create_workstation(request):
-    return create(request, WorkStationSerializer)
+    return create_object(request, WorkStationSerializer)
 
 
 def update_workstation(request, **kwargs):
-    return update(
-        request, get_object_or_404(WorkStation, id=kwargs["id"]), WorkStationSerializer
+    return update_object(
+        request, get_object_or_404(WorkStation, id=kwargs["id"]), WorkStationSerializer,
     )
 
 
@@ -168,17 +172,18 @@ def get_store(request, **kwargs):
 
 
 def create_store(request):
-    return create(request, StoreSerializer)
+    return create_object(request, StoreSerializer)
 
 
 def update_store(request, **kwargs):
-    return update(request, get_object_or_404(Store, id=kwargs["id"]), StoreSerializer)
+    return update_object(
+        request, get_object_or_404(Store, id=kwargs["id"]), StoreSerializer,
+    )
 
 
 def partial_update_store(request, **kwargs):
-    return update(
-        request,
-        get_object_or_404(Store, id=kwargs["id"]),
+    return update_object(
+        request, get_object_or_404(Store, id=kwargs["id"]),
         StoreSerializer,
         partial=True,
     )
@@ -195,32 +200,32 @@ def get_product(request, **kwargs):
 
 
 def create_product(request):
-    return create(request, ProductSerializer)
+    return create_object(request, ProductSerializer)
 
 
 def update_product(request, **kwargs):
-    return update(
-        request, get_object_or_404(Product, id=kwargs["id"]), ProductSerializer
+    return update_object(
+        request, get_object_or_404(Product, id=kwargs["id"]), ProductSerializer,
     )
 
 
 def create_department(request):
-    return create(request, DepartmentSerializer)
+    return create_object(request, DepartmentSerializer)
 
 
 def update_department(request, **kwargs):
-    return update(
-        request, get_object_or_404(Department, id=kwargs["id"]), DepartmentSerializer
+    return update_object(
+        request, get_object_or_404(Department, id=kwargs["id"]), DepartmentSerializer,
     )
 
 
 def create_employee(request):
-    return create(request, EmployeeSerializer)
+    return create_object(request, EmployeeSerializer)
 
 
 def update_employee(request, **kwargs):
-    return update(
-        request, get_object_or_404(Employee, id=kwargs["id"]), EmployeeSerializer
+    return update_object(
+        request, get_object_or_404(Employee, id=kwargs["id"]), EmployeeSerializer,
     )
 
 
@@ -233,8 +238,35 @@ def get_user(request, **kwargs):
 
 
 def create_user(request):
-    return create(request, UserSerializer)
+    return create_object(request, UserSerializer)
 
 
 def update_user(request, **kwargs):
-    return update(request, get_object_or_404(User, id=kwargs["id"]), UserSerializer)
+    return update_object(
+        request, get_object_or_404(User, id=kwargs["id"]), UserSerializer,
+    )
+
+
+def get_books(request):
+    return get_objects(request, Book.objects.all(), BookSerializer)
+
+
+def get_book(request, **kwargs):
+    return get_object(request, get_object_or_404(Book, id=kwargs["id"]), BookSerializer)
+
+
+def create_book(request):
+    return create_object(request, BookSerializer)
+
+
+def update_book(request, **kwargs):
+    return update_object(
+        request, get_object_or_404(Book, id=kwargs["id"]), BookSerializer,
+    )
+
+
+def create_books(request):
+    return create_object(request, BookSerializer, many=True)
+
+def update_books(request):
+    return update_object(request, Book.objects.all(), BookSerializer, many=True)

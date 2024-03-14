@@ -43,3 +43,21 @@ class CreateObjectView:
         self.assertDictEqual(
             response.json(), {"error_message": f"Json decode error for {data}"}
         )
+
+
+class CreateObjectsView(CreateObjectView):
+    def test_create_object(self):
+        response = self.client.post(self.url, content_type=CONTENT_TYPE, data=self.data)
+
+        self.assertEqual(response.status_code, HTTPStatus.CREATED)
+        created_objects = self.model_class.objects.all()
+        result = [
+            {
+                field_name: getattr(created_object, field_name)
+                for data_item in self.data
+                for field_name in data_item
+            }
+            for created_object in created_objects
+        ]
+        for object_data in self.data:
+            self.assertTrue(object_data in result)

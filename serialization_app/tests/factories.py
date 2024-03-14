@@ -5,6 +5,7 @@ from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
 from serialization_app.models import (
+    Book,
     Department,
     Employee,
     HexNut,
@@ -89,3 +90,12 @@ class UserFactory(DjangoModelFactory):
     password = Sequence("user-password-{}".format)
     created_at = datetime.now()
     updated_at = datetime.now()
+
+
+class BookFactory(DjangoModelFactory):
+    class Meta:
+        model = Book
+
+    title = Sequence("book-title-{}".format)
+    author = Sequence("book-author-{}".format)
+    number_book_pages = 200
