@@ -42,16 +42,7 @@ class HexNutSerializer(serializers.Serializer):
         return HexNut.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        instance.designation = validated_data.get("designation")
-        instance.large_thread_pitch = validated_data.get("large_thread_pitch")
-        instance.small_thread_pitch = validated_data.get("small_thread_pitch")
-        instance.size = validated_data.get("size")
-        instance.hight = validated_data.get("hight")
-        instance.e = validated_data.get("e")
-        instance.mass_1000_pc = validated_data.get("mass_1000_pc")
-        instance.amout_pc_in_kg = validated_data.get("amout_pc_in_kg")
-
-        instance.save()
+        HexNut.objects.filter(id=instance.id).update(**validated_data)
         return instance
 
 

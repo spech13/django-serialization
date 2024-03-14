@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from serialization_app.models import (
+    Book,
     Department,
     Employee,
     HexNut,
@@ -59,4 +60,10 @@ class EmployeeAdmin(admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ["name", "password"]
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Book)
+class BookAdmin(admin.ModelAdmin):
+    list_display = ["title", "author", "number_book_pages"]
     readonly_fields = ("created_at", "updated_at")

@@ -1,19 +1,21 @@
 from django.test import TestCase
 
 from serialization_app.tests.factories import UserFactory
-from serialization_app.tests.get_objects_view import GetObjectsView
+from serialization_app.tests.get_object_view import GetObjectsView
 
 
 class GetUsersViewTestCase(GetObjectsView, TestCase):
     url = "/serialization/users/get"
+    fields = ["id", "name", "created_at", "updated_at"]
+    factory_class = UserFactory
 
     def setUp(self):
-        self.expected_result = [
-            {
-                "id": user.id,
-                "name": user.name,
-                "created_at": user.created_at.isoformat().replace("+00:00", "") + "Z",
-                "updated_at": user.updated_at.isoformat().replace("+00:00", "") + "Z",
-            }
-            for user in UserFactory.create_batch(3)
-        ]
+        super().setUp()
+
+        for expected_data in self.expected_result:
+            expected_data["created_at"] = (
+                expected_data["created_at"].isoformat().replace("+00:00", "") + "Z"
+            )
+            expected_data["updated_at"] = (
+                expected_data["updated_at"].isoformat().replace("+00:00", "") + "Z"
+            )

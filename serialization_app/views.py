@@ -100,7 +100,7 @@ def update_object(request, obj, serializer_class, partial=False, many=False):
             {"error_message": f"Json decode error for {data}"},
             status=HTTPStatus.BAD_REQUEST,
         )
-    
+
     serializer = serializer_class(
         obj, data=json.loads(request.body.decode()), partial=partial, many=many
     )
@@ -157,7 +157,9 @@ def create_workstation(request):
 
 def update_workstation(request, **kwargs):
     return update_object(
-        request, get_object_or_404(WorkStation, id=kwargs["id"]), WorkStationSerializer,
+        request,
+        get_object_or_404(WorkStation, id=kwargs["id"]),
+        WorkStationSerializer,
     )
 
 
@@ -177,13 +179,16 @@ def create_store(request):
 
 def update_store(request, **kwargs):
     return update_object(
-        request, get_object_or_404(Store, id=kwargs["id"]), StoreSerializer,
+        request,
+        get_object_or_404(Store, id=kwargs["id"]),
+        StoreSerializer,
     )
 
 
 def partial_update_store(request, **kwargs):
     return update_object(
-        request, get_object_or_404(Store, id=kwargs["id"]),
+        request,
+        get_object_or_404(Store, id=kwargs["id"]),
         StoreSerializer,
         partial=True,
     )
@@ -205,7 +210,9 @@ def create_product(request):
 
 def update_product(request, **kwargs):
     return update_object(
-        request, get_object_or_404(Product, id=kwargs["id"]), ProductSerializer,
+        request,
+        get_object_or_404(Product, id=kwargs["id"]),
+        ProductSerializer,
     )
 
 
@@ -215,7 +222,9 @@ def create_department(request):
 
 def update_department(request, **kwargs):
     return update_object(
-        request, get_object_or_404(Department, id=kwargs["id"]), DepartmentSerializer,
+        request,
+        get_object_or_404(Department, id=kwargs["id"]),
+        DepartmentSerializer,
     )
 
 
@@ -225,7 +234,9 @@ def create_employee(request):
 
 def update_employee(request, **kwargs):
     return update_object(
-        request, get_object_or_404(Employee, id=kwargs["id"]), EmployeeSerializer,
+        request,
+        get_object_or_404(Employee, id=kwargs["id"]),
+        EmployeeSerializer,
     )
 
 
@@ -243,7 +254,9 @@ def create_user(request):
 
 def update_user(request, **kwargs):
     return update_object(
-        request, get_object_or_404(User, id=kwargs["id"]), UserSerializer,
+        request,
+        get_object_or_404(User, id=kwargs["id"]),
+        UserSerializer,
     )
 
 
@@ -261,12 +274,15 @@ def create_book(request):
 
 def update_book(request, **kwargs):
     return update_object(
-        request, get_object_or_404(Book, id=kwargs["id"]), BookSerializer,
+        request,
+        get_object_or_404(Book, id=kwargs["id"]),
+        BookSerializer,
     )
 
 
 def create_books(request):
     return create_object(request, BookSerializer, many=True)
+
 
 def update_books(request):
     return update_object(request, Book.objects.all(), BookSerializer, many=True)

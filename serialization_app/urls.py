@@ -24,6 +24,7 @@ from serialization_app.views import (
     get_workstations,
     partial_update_store,
     update_book,
+    update_books,
     update_department,
     update_employee,
     update_hex_nut,
@@ -31,7 +32,6 @@ from serialization_app.views import (
     update_store,
     update_user,
     update_workstation,
-    update_books,
 )
 
 urlpatterns = [
@@ -69,5 +69,5 @@ urlpatterns = [
     path("books/create", create_book, name="create-book"),
     path("books/<int:id>/update", update_book, name="update-book"),
     path("books/create/many", create_books, name="create-books"),
-    path("books/update/many", update_books, name="update-books")
+    path("books/update/many", update_books, name="update-books"),
 ]
